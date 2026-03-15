@@ -76,19 +76,16 @@ The installer will:
 
 ```bash
 # Install specifically for Cursor IDE
-python install.py --ide cursor
+python <path-to-CUTC>/install.py --ide cursor
 
 # Install specifically for Windsurf IDE  
-python install.py --ide windsurf
+python <path-to-CUTC>/install.py --ide windsurf
 
 # Install for both IDEs
-python install.py --ide both
-
-# Keep installer for debugging
-python install.py --keep-installer
+python <path-to-CUTC>/install.py --ide both
 
 # Get help
-python install.py --help
+python <path-to-CUTC>/install.py --help
 ```
 
 **That's literally it!** 🎉

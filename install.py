@@ -8,18 +8,18 @@ Usage:
   python install.py                    # Auto-detect IDE or prompt for selection
   python install.py --ide cursor      # Install for Cursor IDE
   python install.py --ide windsurf    # Install for Windsurf IDE
-  python install.py --keep-installer  # Keep installer for debugging
 """
 
 import os
 import sys
-import shutil
 from pathlib import Path
 import argparse
 
+SCRIPT_PATH = os.path.dirname(os.path.realpath(__file__))
+
 def load_source_file(filename):
     """Load content from src/ directory"""
-    src_path = Path("src") / filename
+    src_path = Path(SCRIPT_PATH, "src") / filename
     if not src_path.exists():
         raise FileNotFoundError(f"Source file not found: {src_path}")
     
@@ -51,7 +51,7 @@ def check_prerequisites():
         return False
     
     # Check if src/ directory exists
-    src_dir = Path("src")
+    src_dir = Path(SCRIPT_PATH, "src")
     if not src_dir.exists():
         print("❌ Source directory 'src/' not found")
         print("   Make sure you have the complete CUTC package with src/ folder")
@@ -110,7 +110,7 @@ def prompt_ide_selection():
             print("\n\n⚠️  Installation cancelled by user")
             sys.exit(1)
 
-def create_ide_structure(ide):
+def create_ide_structure(ide) -> Path:
     """Create IDE-specific structure"""
     print(f"📁 Creating {ide.upper()} structure...")
     
@@ -127,7 +127,22 @@ def create_ide_structure(ide):
     else:
         raise ValueError(f"Unsupported IDE: {ide}")
 
-def install_files(ide, rules_dir=None):
+def add_to_gitignore(pattern: str):
+    """Add pattern to .gitignore"""
+    print(f"📝 Adding {pattern} to .gitignore...")
+
+    #  check if already exists in .gitignore
+    with open(".gitignore", "r", encoding="utf-8") as f:
+        if pattern in f.read():
+            print("⚠️  Pattern already exists in .gitignore")
+            return
+
+    with open(".gitignore", "a", encoding="utf-8") as f:
+        f.write(pattern + "\n")
+
+    print("✅ Pattern added to .gitignore")
+
+def install_files(ide: str, rules_dir: Path):
     """Install all necessary files for the specified IDE"""
     print(f"📝 Installing CUTC files for {ide.upper()}...")
     
@@ -155,6 +170,9 @@ def install_files(ide, rules_dir=None):
                 f.write(base_rules_content)
             print(f"✅ CUTC rules installed: {rules_file}")
         
+
+        add_to_gitignore("cutc_rules.mdc")
+        add_to_gitignore("/userinput.py")
         return True
     except Exception as e:
         print(f"❌ Failed to install files: {e}")
@@ -239,8 +257,6 @@ def main():
     parser = argparse.ArgumentParser(description="CUTC Ultra-Optimized Installer")
     parser.add_argument("--ide", choices=["cursor", "windsurf", "both"], 
                        help="Target IDE (cursor, windsurf, or both)")
-    parser.add_argument("--keep-installer", action="store_true", 
-                       help="Keep the installer file after installation")
     args = parser.parse_args()
     
     print_header()
@@ -280,7 +296,7 @@ def main():
     print_success_message(target_ide)
     
     # Self-destruct (unless debugging)
-    self_destruct(args.keep_installer)
+    # self_destruct(args.keep_installer)
     
     return 0
 
